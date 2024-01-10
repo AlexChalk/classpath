@@ -1,3 +1,11 @@
+# Unreleased
+
+## Added
+
+## Fixed
+
+## Changed
+
 # 0.5.48 (2024-01-10 / 2228a54)
 
 ## Changed
