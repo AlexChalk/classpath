@@ -113,7 +113,7 @@
   (instance? clojure.lang.DynamicClassLoader cl))
 
 (defn carrier-thread?
-  "Is the given thread a [[jdk.internal.misc.CarrierThread]]"
+  "Is the given thread a [[class jdk.internal.misc.CarrierThread]]"
   [thread]
   (= (str (.getClass thread)) "class jdk.internal.misc.CarrierThread"))
 
