@@ -112,6 +112,16 @@
   [cl]
   (instance? clojure.lang.DynamicClassLoader cl))
 
+(defn carrier-thread?
+  "Is the given thread a [[jdk.internal.misc.CarrierThread]]"
+  [thread]
+  (= (str (.getClass thread)) "class jdk.internal.misc.CarrierThread"))
+
+(defn innocuous-thread?
+  "Is the given thread a [[class jdk.internal.misc.InnocuousThread]]"
+  [thread]
+  (= (str (.getClass thread)) "class jdk.internal.misc.InnocuousThread"))
+
 (defn priority-classloader?
   "Is the given classloader a [[priority-classloader]]"
   [cl]
@@ -347,6 +357,16 @@
     :else
     path))
 
+(defn satisfies-set-context-classloader-conditions?
+  [thread current-thread]
+  (cond
+    (carrier-thread? thread) false
+    (innocuous-thread? thread) false
+    (= thread current-thread) true
+    (root-loader (context-classloader thread)) true
+    (= (app-loader) (context-classloader thread)) true
+    :else false))
+
 (defn install-priority-loader!
   "Install the new priority loader as immediate parent of the bottom-most
   DynamicClassloader, discarding any further descendants. After this the chain is
@@ -391,9 +411,7 @@
                  ;; loader set, this includes threads created by
                  ;; futures/agents (clojure-agent-send-off-pool-*), before
                  ;; `clojure.main/repl` installed its DynamicClassLoader
-                 :when (or (= thread current-thread)
-                           (root-loader (context-classloader thread))
-                           (= (app-loader) (context-classloader thread)))]
+                 :when (satisfies-set-context-classloader-conditions? thread current-thread)]
            (if (debug?)
              (debug-context-classloader thread new-loader)
              (.setContextClassLoader thread new-loader)))
